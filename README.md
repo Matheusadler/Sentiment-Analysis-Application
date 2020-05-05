@@ -1,2 +1,2 @@
-# twitterApp
-A test twitter application for my final paper  in University.
+# Analyze Sentiment Application
+Application for my final paper  in University.
