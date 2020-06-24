@@ -1,20 +1,20 @@
 import polyglot
+import numpy as np
+import pandas as pd
 import csv
+from polyglot.text import Text
 
-from polyglot.text import Text,Word
-with open('CommentsG1_2020-03-14T22-15-50.csv', 'r', encoding='utf-8') as entrada:
-    ler = csv.reader(entrada)
-    next(ler)
-    for linha in ler:
-        text = Text(linha[2])
-        if text.polarity > 0:
-            sentiment = 1
-            print('Nome: {} Sentiment: {}'.format(linha[0], sentiment))
-        elif text.polarity == 0:
-            sentiment = 0
-            print('Nome: {} Sentiment: {}'.format(linha[0], sentiment))
-        else:
-            sentiment = -1
-            print('Nome: {} Sentiment: {}'.format(linha[0], sentiment))
+csvFilePath = 'CommentsG1_2020-06-06T15-41-58.csv'
+jsonFilePath = 'CommentsG1.json'
+
+with open(csvFilePath, 'r', encoding='utf-8') as csvFile:
+    reader = csv.reader(csvFile)
+    next(reader)
+    for rows in reader:
+        print(rows)
+
+
+
+
 
 
