@@ -3,17 +3,16 @@ from tweepy import Cursor
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-from textblob import TextBlob
+from polyglot.text import Text
 
 import twitter_credentials
 import numpy as np
 import pandas as pd
 import re
-import matplotlib.pyplot as plt
 
 
 # # # TWITTER CLIENT # # #
-class TwitterClient():
+class TwitterClient:
     def __init__(self, twitter_user=None):
         self.auth = TwitterAuthenticator().authenticate_twitter_app()
         self.twitter_client = API(self.auth)
@@ -42,8 +41,8 @@ class TwitterClient():
         return home_timeline_tweets
 
 
-# # # TWITTER AUTHENTICATER # # #
-class TwitterAuthenticator():
+# # # TWITTER AUTHENTICATOR # # #
+class TwitterAuthenticator:
     def authenticate_twitter_app(self):
         auth = OAuthHandler(twitter_credentials.consumer_key, twitter_credentials.consumer_secret)
         auth.set_access_token(twitter_credentials.access_token, twitter_credentials.access_token_secret)
@@ -57,15 +56,15 @@ class TwitterStreamer():
     """""
 
     def __init__(self):
-        self.twitter_autenticator = TwitterAuthenticator()
+        self.twitter_authenticator = TwitterAuthenticator()
 
     def stream_tweets(self, fetched_tweets_filename, hash_tag_list):
         # This handles Twitter authentication and the connection to the Twitter Streaming API.
         listener = TwitterListener(fetched_tweets_filename)
-        auth = self.twitter_autenticator.authenticate_twitter_app()
+        auth = self.twitter_authenticator.authenticate_twitter_app()
         stream = Stream(auth, listener)
 
-        # This line filter Twitter Streams to capture data by the keywords
+        # This line filter Twitter Streams to capture data by the keywords.
         stream.filter(track=hash_tag_list)
 
 
@@ -76,6 +75,7 @@ class TwitterListener(StreamListener):
     """""
 
     def __init__(self, fetched_tweets_filename):
+        super().__init__()
         self.fetched_tweets_filename = fetched_tweets_filename
 
     def on_data(self, data):
@@ -99,16 +99,15 @@ class TweetAnalyzer():
     """""
     Functionality for analyzing and categoriring content from tweets.
     """""
+
     def clean_tweet(self, tweet):
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
 
     def analyze_sentiment(self, tweet):
-        analysis = TextBlob(self.clean_tweet(tweet))
-        if analysis.detect_language() != 'en':
-            traducao = TextBlob(str(analysis.translate(to='en')))
-        if traducao.sentiment.polarity > 0:
+        text = Text(self.clean_tweet(tweet))
+        if text.polarity > 0:
             return 1
-        elif traducao.sentiment.polarity == 0:
+        elif text.polarity == 0:
             return 0
         else:
             return -1
