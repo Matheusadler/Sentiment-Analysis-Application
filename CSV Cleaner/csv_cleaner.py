@@ -19,7 +19,7 @@ with open('g1_clean.csv', 'w') as f:
 test = pd.read_csv('g1_clean.csv', encoding='latin-1', error_bad_lines=False)
 
 
-# JSON
+# json
 '''
 import csv
 import json
