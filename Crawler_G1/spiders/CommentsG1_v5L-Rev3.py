@@ -14,7 +14,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 # Insert here all the keywords to be search in the crawler execution!
-labels = ['CLA', 'alcantara', 'centro de lançamentos']
+labels = ['covid']
 
 # Method to verify if the keyword is present in the article title
 def checkTitle (title):
