@@ -14,11 +14,13 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 # Insert here all the keywords to be search in the crawler execution!
-labels = ['covid']
+labels = ['CLA']
+
 
 # Method to verify if the keyword is present in the article title
-def checkTitle (title):
+def checkTitle(title):
     return re.compile(r'\b({0})\b'.format(title), flags=re.IGNORECASE).search
+
 
 # Code
 class CommentsG1(scrapy.Spider):
@@ -26,12 +28,13 @@ class CommentsG1(scrapy.Spider):
     allowed_domains = ['g1.globo.com']
     start_urls = ['https://g1.globo.com/busca/?q=&order=relevant&species=notícias']
 
-    custom_settings={
+    custom_settings = {
         'FEED_FORMAT': 'csv',
         "FEED_URI": "CSV_Data/G1_Data/Comments/CommentsG1_%(time)s.csv"
     }
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.driver = webdriver.Chrome()
 
     def parse(self, response):
@@ -39,10 +42,10 @@ class CommentsG1(scrapy.Spider):
 
         ################################################################# Getting the news #################################################################
         for label in labels:
-            self.driver.get('https://g1.globo.com/busca/?q='+label+'&order=relevant&species=notícias')
+            self.driver.get('https://g1.globo.com/busca/?q=' + label + '&order=relevant&species=notícias')
             hasMore = True
             principal = self.driver.current_window_handle
-        
+
             while hasMore == True:
                 # Keep loading all the news in the page until ends and it's ready to continue the process of parsing and crawl.
                 try:
@@ -65,17 +68,19 @@ class CommentsG1(scrapy.Spider):
                 for n in nID:
                     if n.get_attribute('data-position') > nLast:
                         nID_List.append(n.get_attribute('data-position'))
-                        
+
                 # Loading the news: acessing
                 time.sleep(5)
                 for i in nID_List:
                     nLast = i
                     # Catch the link of the article, scrolls to him and acess into a new tab.
                     try:
-                        articleXPath = self.driver.find_element_by_xpath('/html/body/section/div/div/ul/li[@data-position='+i+']/div[2]/a')
+                        articleXPath = self.driver.find_element_by_xpath(
+                            '/html/body/section/div/div/ul/li[@data-position=' + i + ']/div[2]/a')
                     except:
                         try:
-                            articleXPath = self.driver.find_element_by_xpath('/html/body/section/div/div/ul/li[@data-position='+i+']/div[3]/a')
+                            articleXPath = self.driver.find_element_by_xpath(
+                                '/html/body/section/div/div/ul/li[@data-position=' + i + ']/div[3]/a')
                         except:
                             pass
                     # Open the article in a new tab in order to keep the list full loaded and to save time.
@@ -104,17 +109,19 @@ class CommentsG1(scrapy.Spider):
                         titleXPath = self.driver.find_element_by_xpath('/html/head/meta[@name="title"]')
                         title = titleXPath.get_attribute('content')
                         # Check if the article openned have on it's title the active keyword.
-                        if (checkTitle (label)(str.lower(title))):
+                        if (checkTitle(label)(str.lower(title))):
                             # Scrolls to the comments section, in order to load if it has.                     
                             try:
-                                comment_xpath = self.driver.find_element_by_xpath('//main[@class="mc-body theme"]//div[@id="boxComentarios"]')
+                                comment_xpath = self.driver.find_element_by_xpath(
+                                    '//main[@class="mc-body theme"]//div[@id="boxComentarios"]')
                                 comment_xpath.location_once_scrolled_into_view
                                 time.sleep(5)
                                 comment_xpath.location_once_scrolled_into_view
                                 time.sleep(1)
                             except:
                                 try:
-                                    comment_xpath = self.driver.find_element_by_xpath('//*[@id="glb-corpo"]/div/div[1]/div[1]/div[2]')
+                                    comment_xpath = self.driver.find_element_by_xpath(
+                                        '//*[@id="glb-corpo"]/div/div[1]/div[1]/div[2]')
                                     comment_xpath.location_once_scrolled_into_view
                                     time.sleep(5)
                                     comment_xpath.location_once_scrolled_into_view
@@ -130,31 +137,37 @@ class CommentsG1(scrapy.Spider):
                                         pass
                             # Try to click the "Load more comments" button until it loads all of them
                             try:
-                                while self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[2]/div/div[4]/button'):
-                                    cLoadMore = self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[2]/div/div[4]/button')
+                                while self.driver.find_element_by_xpath(
+                                        '/html/body/div[2]/main/div[4]/div[2]/div/div[4]/button'):
+                                    cLoadMore = self.driver.find_element_by_xpath(
+                                        '/html/body/div[2]/main/div[4]/div[2]/div/div[4]/button')
                                     time.sleep(2)
                                     cLoadMore.location_once_scrolled_into_view
                                     time.sleep(5)
                                     cLoadMore.click()
                             except:
                                 try:
-                                    while self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[3]/div/div[4]/button'):
-                                        cLoadMore = self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[3]/div/div[4]/button')
+                                    while self.driver.find_element_by_xpath(
+                                            '/html/body/div[2]/main/div[4]/div[3]/div/div[4]/button'):
+                                        cLoadMore = self.driver.find_element_by_xpath(
+                                            '/html/body/div[2]/main/div[4]/div[3]/div/div[4]/button')
                                         time.sleep(2)
                                         cLoadMore.location_once_scrolled_into_view
                                         time.sleep(5)
                                         cLoadMore.click()
                                 except:
                                     try:
-                                        while self.driver.find_element_by_xpath('//*[@id="boxComentarios"]/div[4]/button'):
-                                            cLoadMore = self.driver.find_element_by_xpath('//*[@id="boxComentarios"]/div[4]/button')
+                                        while self.driver.find_element_by_xpath(
+                                                '//*[@id="boxComentarios"]/div[4]/button'):
+                                            cLoadMore = self.driver.find_element_by_xpath(
+                                                '//*[@id="boxComentarios"]/div[4]/button')
                                             time.sleep(2)
                                             cLoadMore.location_once_scrolled_into_view
                                             time.sleep(5)
                                             cLoadMore.click()
                                     except:
                                         pass
-                            
+
                             try:
                                 # Catch the IDs of the users and append into a list
                                 ids = self.driver.find_elements_by_xpath("//*[contains(@id, 'comentario-')]")
@@ -169,12 +182,17 @@ class CommentsG1(scrapy.Spider):
                                 # The IDs are used here to extract their comment(s) directly
                                 for c in comment_ids:
                                     try:
-                                        cAuthorXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div[1]/div/div[2]/strong')
-                                        cDateXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div[1]/div/div[2]/div[2]/abbr')
-                                        commentData = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div[1]/div/div[2]/p')
-                                        likesXPath = self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[2]/div/div[4]/ul/li[@id="'+c+'"]/div[1]/div/div[2]/div[3]/button[1]')
-                                        dislikesXPath = self.driver.find_element_by_xpath('/html/body/div[2]/main/div[4]/div[2]/div/div[4]/ul/li[@id="'+c+'"]/div[1]/div/div[2]/div[3]/button[2]')
-                                        
+                                        cAuthorXPath = self.driver.find_element_by_xpath(
+                                            '//*[@id="' + c + '"]/div[1]/div/div[2]/strong')
+                                        cDateXPath = self.driver.find_element_by_xpath(
+                                            '//*[@id="' + c + '"]/div[1]/div/div[2]/div[2]/abbr')
+                                        commentData = self.driver.find_element_by_xpath(
+                                            '//*[@id="' + c + '"]/div[1]/div/div[2]/p')
+                                        likesXPath = self.driver.find_element_by_xpath(
+                                            '/html/body/div[2]/main/div[4]/div[2]/div/div[4]/ul/li[@id="' + c + '"]/div[1]/div/div[2]/div[3]/button[1]')
+                                        dislikesXPath = self.driver.find_element_by_xpath(
+                                            '/html/body/div[2]/main/div[4]/div[2]/div/div[4]/ul/li[@id="' + c + '"]/div[1]/div/div[2]/div[3]/button[2]')
+
                                         cAuthor = cAuthorXPath.text
                                         cDate = cDateXPath.get_attribute('title')
                                         comment = commentData.text
@@ -202,12 +220,17 @@ class CommentsG1(scrapy.Spider):
                                     except:
                                         # Model 1
                                         try:
-                                            cAuthorXPath = self.driver.find_element_by_xpath('//div[@class="glbComentarios-lista-resposta"]//li[@id="'+c+'"]/div[1]/div/div[2]/strong')
-                                            cDateXPath = self.driver.find_element_by_xpath('//div[@class="glbComentarios-lista-resposta"]//li[@id="'+c+'"]/div[1]/div/div[2]/div[2]/abbr')
-                                            commentData = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/p')
-                                            likesXPath = self.driver.find_element_by_xpath('//div[@class="glbComentarios-lista-resposta"]//li[@id="'+c+'"]/div[1]/div/div[2]/div[3]/button[1]')
-                                            dislikesXPath = self.driver.find_element_by_xpath('//div[@class="glbComentarios-lista-resposta"]//li[@id="'+c+'"]/div[1]/div/div[2]/div[3]/button[2]')
-                                            
+                                            cAuthorXPath = self.driver.find_element_by_xpath(
+                                                '//div[@class="glbComentarios-lista-resposta"]//li[@id="' + c + '"]/div[1]/div/div[2]/strong')
+                                            cDateXPath = self.driver.find_element_by_xpath(
+                                                '//div[@class="glbComentarios-lista-resposta"]//li[@id="' + c + '"]/div[1]/div/div[2]/div[2]/abbr')
+                                            commentData = self.driver.find_element_by_xpath(
+                                                '//*[@id="' + c + '"]/div/div/div[2]/p')
+                                            likesXPath = self.driver.find_element_by_xpath(
+                                                '//div[@class="glbComentarios-lista-resposta"]//li[@id="' + c + '"]/div[1]/div/div[2]/div[3]/button[1]')
+                                            dislikesXPath = self.driver.find_element_by_xpath(
+                                                '//div[@class="glbComentarios-lista-resposta"]//li[@id="' + c + '"]/div[1]/div/div[2]/div[3]/button[2]')
+
                                             cAuthor = cAuthorXPath.text
                                             cDate = cDateXPath.get_attribute('title')
                                             comment = commentData.text
@@ -219,7 +242,7 @@ class CommentsG1(scrapy.Spider):
                                                 duplicated = True
                                             else:
                                                 duplicated = False
-                                            
+
                                             # Verifying if the comment is not empty (preprocessing: filtering empty comments and ignoring if is and duplicated)
                                             if (len(comment) > 0 and duplicated == False):
                                                 # Yield: CSV File
@@ -235,12 +258,17 @@ class CommentsG1(scrapy.Spider):
                                         except:
                                             # Model 2
                                             try:
-                                                cAuthorXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/strong')
-                                                cDateXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/div[2]/abbr')
-                                                commentData = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/p')
-                                                likesXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/div[3]/button[1]')
-                                                dislikesXPath = self.driver.find_element_by_xpath('//*[@id="'+c+'"]/div/div/div[2]/div[3]/button[2]')
-                                                
+                                                cAuthorXPath = self.driver.find_element_by_xpath(
+                                                    '//*[@id="' + c + '"]/div/div/div[2]/strong')
+                                                cDateXPath = self.driver.find_element_by_xpath(
+                                                    '//*[@id="' + c + '"]/div/div/div[2]/div[2]/abbr')
+                                                commentData = self.driver.find_element_by_xpath(
+                                                    '//*[@id="' + c + '"]/div/div/div[2]/p')
+                                                likesXPath = self.driver.find_element_by_xpath(
+                                                    '//*[@id="' + c + '"]/div/div/div[2]/div[3]/button[1]')
+                                                dislikesXPath = self.driver.find_element_by_xpath(
+                                                    '//*[@id="' + c + '"]/div/div/div[2]/div[3]/button[2]')
+
                                                 cAuthor = cAuthorXPath.text
                                                 cDate = cDateXPath.get_attribute('title')
                                                 comment = commentData.text
@@ -252,7 +280,7 @@ class CommentsG1(scrapy.Spider):
                                                     duplicated = True
                                                 else:
                                                     duplicated = False
-                                                
+
                                                 # Verifying if the comment is not empty (preprocessing: filtering empty comments and ignoring if is and duplicated)
                                                 if (len(comment) > 0 and duplicated == False):
                                                     # Yield: CSV File

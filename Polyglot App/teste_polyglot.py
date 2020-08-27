@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from polyglot.text import Text
 
 
-with open('../CSV Cleaner/g1_clean.csv', 'r') as csvFile:
+with open('../CSV Cleaner/g1.csv', 'r') as csvFile:
     reader = csv.reader(csvFile)
     next(reader)
     pos = 0
